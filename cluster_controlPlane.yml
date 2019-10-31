@@ -1,0 +1,43 @@
+Description: AWS EKS Cluster - Control plane and worker nodes
+# REF: https://amazon-eks.s3-us-west-2.amazonaws.com/cloudformation/2019-01-09/amazon-eks-vpc-sample.yaml
+
+Parameters:
+
+  EnvironmentName:
+    Description: environment name
+    Type: String
+
+  EKSRoleARN:
+    Description: Role needed to controle the EKS cluster
+    Type: String
+
+Resources:
+
+  ControlPlaneSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Cluster communication with worker nodes
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${EnvironmentName}-VPCID
+
+  k8sCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: k8s-cluster
+      RoleArn: !Ref EKSRoleARN
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - !Ref ControlPlaneSecurityGroup
+        SubnetIds: !Split
+          - ","
+          - Fn::ImportValue:
+              !Sub "${EnvironmentName}-SUB-NETS"
+
+Outputs:
+
+  SecurityGroups:
+    Description: Security group for the cluster control plane communication with worker nodes
+    Value: !Join [ ",", [ !Ref ControlPlaneSecurityGroup ] ]
+    Export:
+      Name: !Sub ${EnvironmentName}-controlPlaneSecGroup
