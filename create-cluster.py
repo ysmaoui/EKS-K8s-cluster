@@ -66,7 +66,6 @@ def main():
 
     check_environment_variables()
 
-    print(cluster_network_parameters)
     create_or_update_stack("K8S-cluster-network", cluster_network_template,
                            cluster_network_parameters)
 
@@ -98,8 +97,7 @@ def create_or_update_stack(stack_name, template, parameters):
         'TemplateBody': template_data,
         'Parameters': parameter_data,
     }
-    print("PARAMETERS")
-    print(parameter_data)
+
     try:
         if _stack_exists(stack_name):
             print('Updating {}'.format(stack_name))
